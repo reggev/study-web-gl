@@ -36,6 +36,10 @@ module.exports = {
         exclude: /\module.s?[ac]ss$/i,
       },
       {
+        test: /\.glsl$/,
+        use: 'webpack-glsl-loader',
+      },
+      {
         test: /\module.s?[ac]ss$/i,
         use: [
           'style-loader',
