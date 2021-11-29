@@ -53,9 +53,10 @@ const vertexShader = makeShader(gl.VERTEX_SHADER, vertexShaderCode)
 const fragmentShader = makeShader(gl.FRAGMENT_SHADER, fragmentShaderCode)
 const program = makeProgram(vertexShader, fragmentShader)
 const triangleVertices = [
-  [0.0, 0.5],
-  [-0.5, -0.5],
-  [0.5, -0.5],
+  // [x, y, r, g, b]
+  [0.0, 0.5, 1.0, 1.0, 0.0],
+  [-0.5, -0.5, 0.7, 0.0, 1.0],
+  [0.5, -0.5, 0.1, 1.0, 0.6],
 ].flat()
 
 const vertexBuffer = gl.createBuffer()
@@ -67,11 +68,22 @@ gl.vertexAttribPointer(
   2,
   gl.FLOAT,
   false,
-  2 * Float32Array.BYTES_PER_ELEMENT,
+  5 * Float32Array.BYTES_PER_ELEMENT,
   0,
 )
 
+const colorAttribLocation = gl.getAttribLocation(program, 'vertColor')
+gl.vertexAttribPointer(
+  colorAttribLocation,
+  3,
+  gl.FLOAT,
+  false,
+  5 * Float32Array.BYTES_PER_ELEMENT,
+  2 * Float32Array.BYTES_PER_ELEMENT,
+)
+
 gl.enableVertexAttribArray(positionAttribLocation)
+gl.enableVertexAttribArray(colorAttribLocation)
 
 gl.useProgram(program)
-gl.drawArrays(gl.TRIANGLES, 0, triangleVertices.length / 2)
+gl.drawArrays(gl.TRIANGLES, 0, 3)
