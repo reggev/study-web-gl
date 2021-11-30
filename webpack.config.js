@@ -17,12 +17,7 @@ module.exports = {
     open: true,
   },
   devtool: 'source-map',
-  plugins: [
-    new HtmlWebpackPlugin({
-      template: './public/index.html',
-      title: 'Canvas Study',
-    }),
-  ],
+  plugins: [new HtmlWebpackPlugin({title: 'Canvas Study'})],
   module: {
     rules: [
       {
@@ -31,13 +26,13 @@ module.exports = {
         use: ['ts-loader'],
       },
       {
+        test: /\.glsl$/,
+        use: 'webpack-glsl-loader',
+      },
+      {
         test: /\.s?[ac]ss$/i,
         use: ['style-loader', 'css-loader', 'sass-loader'],
         exclude: /\module.s?[ac]ss$/i,
-      },
-      {
-        test: /\.glsl$/,
-        use: 'webpack-glsl-loader',
       },
       {
         test: /\module.s?[ac]ss$/i,
@@ -54,8 +49,5 @@ module.exports = {
         ],
       },
     ],
-  },
-  resolve: {
-    extensions: ['.tsx', '.ts', '.js'],
   },
 }
