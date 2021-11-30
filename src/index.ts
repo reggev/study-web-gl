@@ -50,16 +50,69 @@ document.body.appendChild(canvas)
 const vertexShader = makeShader(gl.VERTEX_SHADER, vertexShaderCode)
 const fragmentShader = makeShader(gl.FRAGMENT_SHADER, fragmentShaderCode)
 const program = makeProgram(vertexShader, fragmentShader)
-const triangleVertices = [
+const boxVertices = [
   // [x, y,z,  r, g, b]
-  [0.0, 0.5, 0.0, 1.0, 1.0, 0.0],
-  [-0.5, -0.5, 0.0, 0.7, 0.0, 1.0],
-  [0.5, -0.5, 0.0, 0.1, 1.0, 0.6],
+  // TOP
+  [-1.0, 1.0, -1.0, 0.5, 0.5, 0.5],
+  [-1.0, 1.0, 1.0, 0.5, 0.5, 0.5],
+  [1.0, 1.0, 1.0, 0.5, 0.5, 0.5],
+  [1.0, 1.0, -1.0, 0.5, 0.5, 0.5],
+  // LEFT
+  [-1.0, 1.0, 1.0, 0.75, 0.25, 0.5],
+  [-1.0, -1.0, 1.0, 0.75, 0.25, 0.5],
+  [-1.0, -1.0, -1.0, 0.75, 0.25, 0.5],
+  [-1.0, 1.0, -1.0, 0.75, 0.25, 0.5],
+  // RIGHT
+  [1.0, 1.0, 1.0, 0.25, 0.25, 0.75],
+  [1.0, -1.0, 1.0, 0.25, 0.25, 0.75],
+  [1.0, -1.0, -1.0, 0.25, 0.25, 0.75],
+  [1.0, 1.0, -1.0, 0.25, 0.25, 0.75],
+  // FRONT
+  [1.0, 1.0, 1.0, 1.0, 0.0, 0.15],
+  [1.0, -1.0, 1.0, 1.0, 0.0, 0.15],
+  [-1.0, -1.0, 1.0, 1.0, 0.0, 0.15],
+  [-1.0, 1.0, 1.0, 1.0, 0.0, 0.15],
+  // BACK
+  [1.0, 1.0, -1.0, 0.0, 1.0, 0.15],
+  [1.0, -1.0, -1.0, 0.0, 1.0, 0.15],
+  [-1.0, -1.0, -1.0, 0.0, 1.0, 0.15],
+  [-1.0, 1.0, -1.0, 0.0, 1.0, 0.15],
+  // BOTTOM
+  [-1.0, -1.0, -1.0, 0.5, 0.5, 1.0],
+  [-1.0, -1.0, 1.0, 0.5, 0.5, 1.0],
+  [1.0, -1.0, 1.0, 0.5, 0.5, 1.0],
+  [1.0, -1.0, -1.0, 0.5, 0.5, 1.0],
+].flat()
+
+const boxIndices = [
+  // Top
+  [0, 1, 2],
+  [0, 2, 3],
+  // Left
+  [5, 4, 6],
+  [6, 4, 7],
+  // Right
+  [8, 9, 10],
+  [8, 10, 11],
+  // Front
+  [13, 12, 14],
+  [15, 14, 12],
+  // Back
+  [16, 17, 18],
+  [16, 18, 19],
+  // Bottom
+  [20, 21, 22],
+  [22, 20, 23],
 ].flat()
 
 const vertexBuffer = gl.createBuffer()
 gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer)
-gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(triangleVertices), gl.STATIC_DRAW)
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(boxVertices), gl.STATIC_DRAW)
+
+const indexBuffer = gl.createBuffer()
+gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer)
+gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(boxIndices), gl.STATIC_DRAW)
+
 const positionAttribLocation = gl.getAttribLocation(program, 'vertPosition')
 gl.vertexAttribPointer(
   positionAttribLocation,
@@ -79,7 +132,9 @@ gl.vertexAttribPointer(
   6 * Float32Array.BYTES_PER_ELEMENT,
   3 * Float32Array.BYTES_PER_ELEMENT,
 )
-
+gl.enable(gl.DEPTH_TEST)
+gl.enable(gl.CULL_FACE)
+gl.enable(gl.CW)
 gl.enableVertexAttribArray(positionAttribLocation)
 gl.enableVertexAttribArray(colorAttribLocation)
 gl.useProgram(program)
@@ -92,7 +147,7 @@ const worldMatrix = new Float32Array(16)
 const viewMatrix = new Float32Array(16)
 const projectionMatrix = new Float32Array(16)
 mat4.identity(worldMatrix)
-mat4.lookAt(viewMatrix, [0, 0, -2], [0, 0, 0], [0, 1, 0])
+mat4.lookAt(viewMatrix, [0, 10, -10], [0, 0, 0], [0, 1, 0])
 mat4.perspective(projectionMatrix, glMatrix.toRadian(45), canvas.width / canvas.height, 0.1, 1000.0)
 
 gl.uniformMatrix4fv(matViewUniformLocation, false, viewMatrix)
@@ -106,9 +161,10 @@ function renderLoop() {
   gl.clearColor(0.75, 0.85, 0.8, 1.0)
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
   angle = (performance.now() / 1000 / 6) * 2 * Math.PI
-  mat4.rotate(worldMatrix, identityMatrix, angle, [0, 1, 0])
+  mat4.rotate(worldMatrix, identityMatrix, angle, [0.5, 1, 0])
   gl.uniformMatrix4fv(matWorldUniformLocation, false, worldMatrix)
-  gl.drawArrays(gl.TRIANGLES, 0, 3)
+  gl.drawElements(gl.TRIANGLES, boxIndices.length, gl.UNSIGNED_SHORT, 0)
+
   requestAnimationFrame(renderLoop)
 }
 requestAnimationFrame(renderLoop)
