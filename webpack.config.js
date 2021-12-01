@@ -14,10 +14,9 @@ module.exports = {
     },
     historyApiFallback: true,
     compress: true,
-    open: true,
   },
   devtool: 'source-map',
-  plugins: [new HtmlWebpackPlugin({title: 'Canvas Study'})],
+  plugins: [new HtmlWebpackPlugin({title: 'WebGL Study'})],
   module: {
     rules: [
       {
@@ -48,6 +47,16 @@ module.exports = {
           'sass-loader',
         ],
       },
+      {
+        test: /\.(png|svg|jpg|jpeg|gif)$/i,
+        type: 'asset/resource',
+      },
     ],
+  },
+  resolve: {
+    extensions: ['.tsx', '.ts', '.js'],
+    alias: {
+      assets: path.resolve(__dirname, 'public'),
+    },
   },
 }

@@ -2,86 +2,51 @@ import './index.scss'
 import vertexShaderCode from './vertex-shader.glsl'
 import fragmentShaderCode from './fragment-shader.glsl'
 import {glMatrix, mat4} from 'gl-matrix'
-
-function makeCanvas({width = 500, height = 500} = {}) {
-  const {canvas, gl} = (() => {
-    const _canvas = document.createElement('canvas')
-    _canvas.width = width
-    _canvas.height = height
-    _canvas.setAttribute('id', 'canvas')
-    const _gl = _canvas.getContext('webgl2')
-    if (!_gl) {
-      throw new Error('Could not get context')
-    }
-    return {gl: _gl, canvas: _canvas}
-  })()
-
-  function makeShader(shaderType: number, source: string) {
-    const shader = gl.createShader(shaderType) as WebGLShader
-    gl.shaderSource(shader, source)
-    gl.compileShader(shader)
-    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-      throw new Error(gl.getShaderInfoLog(shader) ?? 'error compiling shader')
-    }
-    return shader
-  }
-
-  function makeProgram(vertexShader: WebGLShader, fragmentShader: WebGLShader) {
-    const program = gl.createProgram() as WebGLProgram
-    gl.attachShader(program, vertexShader)
-    gl.attachShader(program, fragmentShader)
-    gl.linkProgram(program)
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-      throw new Error(gl.getProgramInfoLog(program) ?? 'error linking program')
-    }
-    gl.validateProgram(program)
-    if (!gl.getProgramParameter(program, gl.VALIDATE_STATUS)) {
-      throw new Error(gl.getProgramInfoLog(program) ?? 'error validating program')
-    }
-    return program
-  }
-
-  return {canvas, gl, makeShader, makeProgram}
-}
+import {makeCanvas} from './make-canvas'
+import {makeImg} from './make-img'
+import createTexture from 'assets/crate.jpg'
 
 const {canvas, gl, makeShader, makeProgram} = makeCanvas()
-document.body.appendChild(canvas)
+const img = makeImg(createTexture)
 
-const vertexShader = makeShader(gl.VERTEX_SHADER, vertexShaderCode)
-const fragmentShader = makeShader(gl.FRAGMENT_SHADER, fragmentShaderCode)
+document.body.appendChild(canvas)
+document.body.appendChild(img)
+
+const vertexShader = makeShader('vertexShader', gl.VERTEX_SHADER, vertexShaderCode)
+const fragmentShader = makeShader('fragmentShader', gl.FRAGMENT_SHADER, fragmentShaderCode)
 const program = makeProgram(vertexShader, fragmentShader)
 const boxVertices = [
-  // [x, y,z,  r, g, b]
+  // [x, y,z,  u, v]
   // TOP
-  [-1.0, 1.0, -1.0, 0.5, 0.5, 0.5],
-  [-1.0, 1.0, 1.0, 0.5, 0.5, 0.5],
-  [1.0, 1.0, 1.0, 0.5, 0.5, 0.5],
-  [1.0, 1.0, -1.0, 0.5, 0.5, 0.5],
+  [-1.0, 1.0, -1.0, 0, 0],
+  [-1.0, 1.0, 1.0, 0, 1],
+  [1.0, 1.0, 1.0, 1, 1],
+  [1.0, 1.0, -1.0, 1, 0],
   // LEFT
-  [-1.0, 1.0, 1.0, 0.75, 0.25, 0.5],
-  [-1.0, -1.0, 1.0, 0.75, 0.25, 0.5],
-  [-1.0, -1.0, -1.0, 0.75, 0.25, 0.5],
-  [-1.0, 1.0, -1.0, 0.75, 0.25, 0.5],
+  [-1.0, 1.0, 1.0, 0, 0],
+  [-1.0, -1.0, 1.0, 1, 0],
+  [-1.0, -1.0, -1.0, 1, 1],
+  [-1.0, 1.0, -1.0, 0, 1],
   // RIGHT
-  [1.0, 1.0, 1.0, 0.25, 0.25, 0.75],
-  [1.0, -1.0, 1.0, 0.25, 0.25, 0.75],
-  [1.0, -1.0, -1.0, 0.25, 0.25, 0.75],
-  [1.0, 1.0, -1.0, 0.25, 0.25, 0.75],
+  [1.0, 1.0, 1.0, 1, 1],
+  [1.0, -1.0, 1.0, 0, 1],
+  [1.0, -1.0, -1.0, 0, 0],
+  [1.0, 1.0, -1.0, 1, 0],
   // FRONT
-  [1.0, 1.0, 1.0, 1.0, 0.0, 0.15],
-  [1.0, -1.0, 1.0, 1.0, 0.0, 0.15],
-  [-1.0, -1.0, 1.0, 1.0, 0.0, 0.15],
-  [-1.0, 1.0, 1.0, 1.0, 0.0, 0.15],
+  [1.0, 1.0, 1.0, 1, 1],
+  [1.0, -1.0, 1.0, 1, 0],
+  [-1.0, -1.0, 1.0, 0, 0],
+  [-1.0, 1.0, 1.0, 0, 1],
   // BACK
-  [1.0, 1.0, -1.0, 0.0, 1.0, 0.15],
-  [1.0, -1.0, -1.0, 0.0, 1.0, 0.15],
-  [-1.0, -1.0, -1.0, 0.0, 1.0, 0.15],
-  [-1.0, 1.0, -1.0, 0.0, 1.0, 0.15],
+  [1.0, 1.0, -1.0, 0, 0],
+  [1.0, -1.0, -1.0, 0, 1],
+  [-1.0, -1.0, -1.0, 1, 1],
+  [-1.0, 1.0, -1.0, 1, 0],
   // BOTTOM
-  [-1.0, -1.0, -1.0, 0.5, 0.5, 1.0],
-  [-1.0, -1.0, 1.0, 0.5, 0.5, 1.0],
-  [1.0, -1.0, 1.0, 0.5, 0.5, 1.0],
-  [1.0, -1.0, -1.0, 0.5, 0.5, 1.0],
+  [-1.0, -1.0, -1.0, 1, 1],
+  [-1.0, -1.0, 1.0, 1, 0],
+  [1.0, -1.0, 1.0, 0, 0],
+  [1.0, -1.0, -1.0, 0, 1],
 ].flat()
 
 const boxIndices = [
@@ -119,24 +84,35 @@ gl.vertexAttribPointer(
   3,
   gl.FLOAT,
   false,
-  6 * Float32Array.BYTES_PER_ELEMENT,
+  5 * Float32Array.BYTES_PER_ELEMENT,
   0,
 )
 
-const colorAttribLocation = gl.getAttribLocation(program, 'vertColor')
+const textureCoordinatesAttribLocation = gl.getAttribLocation(program, 'vectTextureCoordinates')
 gl.vertexAttribPointer(
-  colorAttribLocation,
-  3,
+  textureCoordinatesAttribLocation,
+  2,
   gl.FLOAT,
   false,
-  6 * Float32Array.BYTES_PER_ELEMENT,
+  5 * Float32Array.BYTES_PER_ELEMENT,
   3 * Float32Array.BYTES_PER_ELEMENT,
 )
+
 gl.enable(gl.DEPTH_TEST)
 gl.enable(gl.CULL_FACE)
 gl.enable(gl.CW)
 gl.enableVertexAttribArray(positionAttribLocation)
-gl.enableVertexAttribArray(colorAttribLocation)
+gl.enableVertexAttribArray(textureCoordinatesAttribLocation)
+
+const boxTexture = gl.createTexture()
+gl.bindTexture(gl.TEXTURE_2D, boxTexture)
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img)
+gl.bindTexture(gl.TEXTURE_2D, null)
+
 gl.useProgram(program)
 
 const matWorldUniformLocation = gl.getUniformLocation(program, 'mWorld')
@@ -164,7 +140,8 @@ function renderLoop() {
   mat4.rotate(worldMatrix, identityMatrix, angle, [0.5, 1, 0])
   gl.uniformMatrix4fv(matWorldUniformLocation, false, worldMatrix)
   gl.drawElements(gl.TRIANGLES, boxIndices.length, gl.UNSIGNED_SHORT, 0)
-
+  gl.bindTexture(gl.TEXTURE_2D, boxTexture)
+  gl.activeTexture(gl.TEXTURE0)
   requestAnimationFrame(renderLoop)
 }
 requestAnimationFrame(renderLoop)
