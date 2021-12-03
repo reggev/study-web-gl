@@ -3,20 +3,19 @@ import vertexShaderCode from './vertex-shader.glsl'
 import fragmentShaderCode from './fragment-shader.glsl'
 import {glMatrix, mat4} from 'gl-matrix'
 import {makeCanvas} from './make-canvas'
-import {makeImg} from './make-img'
+import {loadImage} from './load-img'
 import createTexture from 'assets/crate.jpg'
 
 const {canvas, gl, makeShader, makeProgram} = makeCanvas()
-const img = makeImg(createTexture)
+const img = loadImage(createTexture)
 
 document.body.appendChild(canvas)
-document.body.appendChild(img)
 
 const vertexShader = makeShader('vertexShader', gl.VERTEX_SHADER, vertexShaderCode)
 const fragmentShader = makeShader('fragmentShader', gl.FRAGMENT_SHADER, fragmentShaderCode)
 const program = makeProgram(vertexShader, fragmentShader)
 const boxVertices = [
-  // [x, y,z,  u, v]
+  // [x, y, z, u, v]
   // TOP
   [-1.0, 1.0, -1.0, 0, 0],
   [-1.0, 1.0, 1.0, 0, 1],

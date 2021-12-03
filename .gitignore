@@ -123,3 +123,5 @@ dist
 # mac files
 .DS_Store
 **/*.tmp.*
+
+model
