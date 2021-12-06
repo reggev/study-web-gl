@@ -53,6 +53,9 @@ module.exports = {
       },
     ],
   },
+  experiments: {
+    topLevelAwait: true,
+  },
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
     alias: {

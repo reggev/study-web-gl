@@ -7,7 +7,7 @@ import {loadImage} from './load-img'
 import createTexture from 'assets/crate.jpg'
 
 const {canvas, gl, makeShader, makeProgram} = makeCanvas()
-const img = loadImage(createTexture)
+const img = await loadImage(createTexture)
 
 document.body.appendChild(canvas)
 
@@ -99,7 +99,6 @@ gl.vertexAttribPointer(
 
 gl.enable(gl.DEPTH_TEST)
 gl.enable(gl.CULL_FACE)
-gl.enable(gl.CW)
 gl.enableVertexAttribArray(positionAttribLocation)
 gl.enableVertexAttribArray(textureCoordinatesAttribLocation)
 
