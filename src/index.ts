@@ -19,6 +19,7 @@ const program = makeProgram(vertexShader, fragmentShader)
 const susanVertices = susanModel.meshes[0].vertices
 const susanFaces = susanModel.meshes[0].faces.flat()
 const susanTextureCoordinates = susanModel.meshes[0].texturecoords[0]
+const susanNormals = susanModel.meshes[0].normals
 
 // buffer types
 // VBO - vertex buffer object
@@ -37,6 +38,10 @@ gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(susanFaces), gl.STATIC_DR
 const textureVBO = gl.createBuffer()
 gl.bindBuffer(gl.ARRAY_BUFFER, textureVBO)
 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(susanTextureCoordinates), gl.STATIC_DRAW)
+
+const susanNormalsVBO = gl.createBuffer()
+gl.bindBuffer(gl.ARRAY_BUFFER, susanNormalsVBO)
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(susanNormals), gl.STATIC_DRAW)
 
 gl.bindBuffer(gl.ARRAY_BUFFER, positionVBO)
 const positionAttribLocation = gl.getAttribLocation(program, 'vertPosition')
@@ -61,6 +66,18 @@ gl.vertexAttribPointer(
   0,
 )
 gl.enableVertexAttribArray(textureCoordinatesAttribLocation)
+
+gl.bindBuffer(gl.ARRAY_BUFFER, susanNormalsVBO)
+const normalAttributeLocation = gl.getAttribLocation(program, 'vertexNormal')
+gl.vertexAttribPointer(
+  normalAttributeLocation,
+  3,
+  gl.FLOAT,
+  true,
+  3 * Float32Array.BYTES_PER_ELEMENT,
+  0,
+)
+gl.enableVertexAttribArray(normalAttributeLocation)
 
 gl.enable(gl.DEPTH_TEST)
 gl.enable(gl.CULL_FACE)
@@ -101,6 +118,20 @@ function renderLoop() {
   angle = (performance.now() / 1000 / 6) * 2 * Math.PI
   mat4.rotate(worldMatrix, identityMatrix, angle, [1, 0, 1])
   gl.uniformMatrix4fv(matWorldUniformLocation, false, worldMatrix)
+
+  gl.useProgram(program)
+  const ambientLightIntensityUniformLocation = gl.getUniformLocation(
+    program,
+    'ambientLightIntensity',
+  )
+  const sunlightColorUniformLocation = gl.getUniformLocation(program, 'sun.color')
+  const sunlightDirectionUniformLocation = gl.getUniformLocation(program, 'sun.direction')
+  const sunlightIntensityUniformLocation = gl.getUniformLocation(program, 'sun.intensity')
+  gl.uniform3fv(ambientLightIntensityUniformLocation, [0.2, 0.2, 0.2])
+  gl.uniform3fv(sunlightColorUniformLocation, [0.9, 0.9, 0.9])
+  gl.uniform3fv(sunlightDirectionUniformLocation, [1.0, 4.0, -10.0])
+  gl.uniform1f(sunlightIntensityUniformLocation, 1.0)
+
   gl.drawElements(gl.TRIANGLES, susanFaces.length, gl.UNSIGNED_SHORT, 0)
   gl.bindTexture(gl.TEXTURE_2D, boxTexture)
   gl.activeTexture(gl.TEXTURE0)
